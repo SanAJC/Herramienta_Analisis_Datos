@@ -1,22 +1,8 @@
+import pandas as pd
 from django.db import models
-from django.contrib.auth.models import AbstractUser ,Group , Permission
-# Create your models here.
-
-class User(AbstractUser):
+class User(models.Model):
     email = models.EmailField(unique=True)
-    password=models.CharField(max_length=10)
-
-    # Agregar related_name para evitar conflictos
-    groups = models.ManyToManyField(
-        Group,
-        related_name="grupos",  
-        blank=True
-    )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        related_name="permisos",  
-        blank=True
-    )
+    password = models.CharField(max_length=10)
 
 class File(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='excel_files')
@@ -25,4 +11,24 @@ class File(models.Model):
     file_type = models.CharField(max_length=10, choices=[('csv', 'CSV'), ('xls', 'XLS'), ('xlsx', 'XLSX')])
 
     def __str__(self):
-        return f'{self.user.username} - {self.file.name}'
+        return f'{self.user.email} - {self.file.name}'
+
+    def extraer_data(self):
+        archivo = self.file.path
+
+        try:
+            if self.file_type == 'csv':
+                df = pd.read_csv(archivo)
+            elif self.file_type in ['xls', 'xlsx']:
+                df = pd.read_excel(archivo)
+
+            data_array = df.to_numpy()
+            processed_data = {
+                "columns": df.columns.tolist(),
+                "summary": df.describe().to_dict(),
+                "data_array": data_array.tolist()
+            }
+            return processed_data
+
+        except Exception as e:
+            return {"error": f"No se pudo procesar el archivo: {str(e)}"}
