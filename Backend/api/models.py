@@ -1,8 +1,10 @@
 import pandas as pd
 from django.db import models
 class User(models.Model):
+    name = models.CharField(max_length=20,default="Anonymous")
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=10)
+    rol=models.CharField(max_length=10)
 
 class File(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='excel_files')
