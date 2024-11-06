@@ -26,7 +26,7 @@ const MainRouter = () => {
         <Route path="/home2" element={<DashboardLayout />} />
         <Route
           path="/home"
-          element={isAuthenticated ? <Home /> : <Navigate to="/login" />}
+          element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />}
         />
       </Routes>
     </Router>

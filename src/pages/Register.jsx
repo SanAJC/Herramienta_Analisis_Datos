@@ -15,7 +15,8 @@ const LoginForm = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(null);
+    setError(null); // Reinicia el estado de error en cada intento
+
     try {
       const response = await api.post('/login', {
         username,

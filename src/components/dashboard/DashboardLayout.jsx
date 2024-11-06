@@ -7,6 +7,7 @@ import AnalysisSection from "./sections/AnalysisSection";
 import VisualizationSection from "./sections/VisualizationSection";
 import ProfileSection from "./sections/ProfileSection";
 import Notification from "./common/Notification";
+import HistorySection from "./sections/HistorySection";
 
 export function DashboardLayout() {
   const [activeSection, setActiveSection] = useState("home");
@@ -38,6 +39,9 @@ export function DashboardLayout() {
         )}
         {activeSection === "profile" && (
           <ProfileSection showNotification={showNotification} />
+        )}
+        {activeSection === "history" && (
+          <HistorySection showNotification={showNotification} />
         )}
         {notification && <Notification message={notification} />}
       </main>

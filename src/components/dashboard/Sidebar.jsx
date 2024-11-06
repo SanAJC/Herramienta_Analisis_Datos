@@ -1,5 +1,13 @@
 // src/components/dashboard/Sidebar.jsx
-import { Home, Upload, PlayCircle, PieChart, User, Menu } from "lucide-react";
+import {
+  Home,
+  Upload,
+  PlayCircle,
+  PieChart,
+  User,
+  Menu,
+  ClockIcon,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -13,6 +21,7 @@ export default function Sidebar({ activeSection, setActiveSection }) {
     { icon: <Upload />, label: "Carga de Datos", id: "upload" },
     { icon: <PlayCircle />, label: "Ejecución de Análisis", id: "analysis" },
     { icon: <PieChart />, label: "Visualización", id: "visualization" },
+    { icon: <ClockIcon />, label: "Historial", id: "history" }, // Cambiado a ClockIcon
     { icon: <User />, label: "Perfil", id: "profile" },
   ];
 
