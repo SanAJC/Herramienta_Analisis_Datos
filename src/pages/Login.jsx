@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { login } from '../redux/slices/authSlice';
-import api from '../services/api';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../redux/slices/authSlice";
+import api from "../services/api";
 import "../Styles/style.css";
 
 const LoginForm = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
 
@@ -15,15 +15,15 @@ const LoginForm = () => {
     e.preventDefault();
     setError(null);
     try {
-      const response = await api.post('/login', {
+      const response = await api.post("/login", {
         username,
         password,
       });
       dispatch(login(response.data));
       // Redirigir al usuario a la página de inicio
     } catch (error) {
-      console.error('Error en el inicio de sesión:', error);
-      setError('Error al iniciar sesión. Intenta nuevamente.');
+      console.error("Error en el inicio de sesión:", error);
+      setError("Error al iniciar sesión. Intenta nuevamente.");
     }
   };
 
@@ -42,13 +42,13 @@ const LoginForm = () => {
       }
     }
 
-    inputs.forEach(input => {
+    inputs.forEach((input) => {
       input.addEventListener("focus", addcl);
       input.addEventListener("blur", remcl);
     });
 
     return () => {
-      inputs.forEach(input => {
+      inputs.forEach((input) => {
         input.removeEventListener("focus", addcl);
         input.removeEventListener("blur", remcl);
       });
@@ -64,7 +64,11 @@ const LoginForm = () => {
         </div>
         <div className="login-content">
           <form onSubmit={handleLogin} action="index.html">
-            <img src="../../public/img/AVA.svg" alt="Logo" className='imagen__persona'/>
+            <img
+              src="../../public/img/AVA.svg"
+              alt="Logo"
+              className="imagen__persona"
+            />
             <h2 className="title">LOGIN</h2>
             <div className="input-div one">
               <div className="i">
@@ -95,9 +99,6 @@ const LoginForm = () => {
               </div>
             </div>
             {error && <p className="text-red-500 mb-4">{error}</p>}
-            <a href="#" className="text-gray-500 hover:text-indigo-600 text-sm">
-              Olvidaste la Contraseña?
-            </a>
             <input type="submit" className="btn" value="Ingresar" />
             <Link
               to="/register"
