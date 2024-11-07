@@ -1,7 +1,7 @@
 import pandas as pd
 from django.db import models
 class User(models.Model):
-    name = models.CharField(max_length=20,default="Anonymous")
+    username = models.CharField(max_length=20,default="Anonymous")
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=10)
     rol=models.CharField(max_length=10)

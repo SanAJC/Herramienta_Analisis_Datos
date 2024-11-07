@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import File
+from .models import File,User
 from .serializers import FileSerializer , LoginSerializer, UserSerializer,RegisterSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import login, logout
@@ -31,13 +31,17 @@ class FileViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-class AuthViewSet(viewsets.ViewSet):
+class AuthViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     @action(detail=False, methods=['post'], url_path='register')
     def register(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+        else:
+            print("Errores de validación:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], url_path='login')
@@ -47,6 +51,8 @@ class AuthViewSet(viewsets.ViewSet):
             user = serializer.validated_data
             login(request, user)  
             return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+        else:
+            print("Errores de validación:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], url_path='logout')

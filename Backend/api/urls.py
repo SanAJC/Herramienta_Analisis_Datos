@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import FileViewSet
-from .views import AuthViewSet
+from .views import FileViewSet , AuthViewSet
+
 
 router = DefaultRouter()
 router.register(r'file', FileViewSet, basename='file')

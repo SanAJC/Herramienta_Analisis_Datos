@@ -2,34 +2,47 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login } from "../redux/slices/authSlice";
-import api from "../services/api";
 import "../Styles/style.css";
 
 const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
+  const [rol, setRol] = useState("");
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(null); // Reinicia el estado de error en cada intento
+    setError(null);
 
     try {
-      const response = await api.post("/login", {
-        username,
-        email,
-        password,
-        role, // Añadir el rol a la solicitud de inicio de sesión
+      const response = await fetch("http://127.0.0.1:8000/api/auth/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          rol
+        })
       });
-      dispatch(login(response.data));
-      // Redirigir al usuario a la página de inicio
+
+      if (!response.ok) {
+        throw new Error("Error en el registro. Verifica tus datos.");
+      }
+
+      const data = await response.json();
+      dispatch(login(data));
+      // Aquí podrías redirigir al usuario a otra página si el registro es exitoso
+
     } catch (error) {
-      console.error("Error en el inicio de sesión:", error);
-      setError("Error al iniciar sesión. Intenta nuevamente.");
+      console.error("Error en el registro:", error);
+      setError("Error al registrar. Intenta nuevamente.");
     }
+    console.log(JSON.stringify({ username, email, password, rol }));
   };
 
   useEffect(() => {
@@ -80,7 +93,7 @@ const LoginForm = () => {
                 <i className="fas fa-user"></i>
               </div>
               <div className="div">
-                <h5>Nombre y Apellido</h5>
+                <h5>Nombre de Usuario</h5>
                 <input
                   type="text"
                   className="input"
@@ -97,8 +110,8 @@ const LoginForm = () => {
                 <h5></h5>
                 <select
                   className="input"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
+                  value={rol}
+                  onChange={(e) => setRol(e.target.value)}
                 >
                   <option value="" disabled>
                     Selecciona tu Rol
@@ -117,8 +130,8 @@ const LoginForm = () => {
                 <input
                   type="text"
                   className="input"
-                  value={email} // Cambiar a email
-                  onChange={(e) => setEmail(e.target.value)} // Cambiar manejador a setEmail
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>

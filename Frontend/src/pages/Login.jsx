@@ -15,16 +15,30 @@ const LoginForm = () => {
     e.preventDefault();
     setError(null);
     try {
-      const response = await api.post("/login", {
-        username,
-        password,
+      const response = await fetch("http://127.0.0.1:8000/api/auth/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username,
+          password       
+        })
       });
-      dispatch(login(response.data));
-      // Redirigir al usuario a la página de inicio
+
+      if (!response.ok) {
+        throw new Error("Error en el registro. Verifica tus datos.");
+      }
+
+      const data = await response.json();
+      dispatch(login(data));
+      // Aquí podrías redirigir al usuario a otra página si el registro es exitoso
+
     } catch (error) {
-      console.error("Error en el inicio de sesión:", error);
-      setError("Error al iniciar sesión. Intenta nuevamente.");
+      console.error("Error en el registro:", error);
+      setError("Error al ingresar. Intenta nuevamente.");
     }
+    console.log(JSON.stringify({ username, password }));
   };
 
   useEffect(() => {
@@ -75,7 +89,7 @@ const LoginForm = () => {
                 <i className="fas fa-user"></i>
               </div>
               <div className="div">
-                <h5>Usuario</h5>
+                <h5>Username</h5>
                 <input
                   type="text"
                   className="input"

@@ -16,30 +16,29 @@ class FileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'rol']
+        fields = ['id', 'username', 'email', 'rol']
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['name', 'email', 'password', 'rol']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['username', 'email', 'password', 'rol']
 
     def create(self, validated_data):
         user = User.objects.create(
-            name=validated_data['name'],
+            username=validated_data['username'],
             email=validated_data['email'],
+            password=validated_data['password'],
             rol=validated_data['rol']
         )
-        user.set_password(validated_data['password'])
         user.save()
         return user
 
-class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
+class LoginSerializer(serializers.Serializer):  
+    username = serializers.CharField()  
+    password = serializers.CharField()
 
     def validate(self, data):
-        user = authenticate(email=data['email'], password=data['password'])
+        user = authenticate(username=data['username'], password=data['password'])
         if not user:
             raise serializers.ValidationError("Credenciales incorrectas")
         return user
