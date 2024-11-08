@@ -5,7 +5,7 @@ from .models import File,User
 from .serializers import FileSerializer , LoginSerializer, UserSerializer,RegisterSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import login, logout
-from django.contrib import auth 
+from django.contrib import auth
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
