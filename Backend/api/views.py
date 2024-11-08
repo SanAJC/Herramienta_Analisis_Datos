@@ -51,7 +51,7 @@ class AuthViewSet(viewsets.ModelViewSet):
     def login_view(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.validated_data['user']  # Asegúrate de obtener el usuario correctamente
+            user = serializer.validated_data  # Asegúrate de obtener el usuario correctamente
             auth.login(request, user)
 
             # Generar el token
