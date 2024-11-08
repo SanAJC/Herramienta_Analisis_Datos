@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login } from "../redux/slices/authSlice";
 import "../Styles/style.css";
+import api from "../services/api";
 
-const LoginForm = () => {
+const RegisterForm = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,37 +13,36 @@ const LoginForm = () => {
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
 
-  const handleLogin = async (e) => {
+  const navigate = useNavigate();
+
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/auth/register/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          rol
-        })
+      const registerResponse = await api.post("/auth/register/", {
+        username,
+        email,
+        password,
+        rol,
       });
 
-      if (!response.ok) {
-        throw new Error("Error en el registro. Verifica tus datos.");
-      }
+      // Si el registro es exitoso, hacer login automático
+      const loginResponse = await api.post("/auth/login/", {
+        username,
+        password,
+      });
 
-      const data = await response.json();
-      dispatch(login(data));
-      // Aquí podrías redirigir al usuario a otra página si el registro es exitoso
-
+      const { token, user } = loginResponse.data;
+      dispatch(login({ token, user }));
+      navigate("/home");
     } catch (error) {
       console.error("Error en el registro:", error);
-      setError("Error al registrar. Intenta nuevamente.");
+      setError(
+        error.response?.data?.message ||
+          "Error al registrar. Intenta nuevamente."
+      );
     }
-    console.log(JSON.stringify({ username, email, password, rol }));
   };
 
   useEffect(() => {
@@ -81,7 +81,7 @@ const LoginForm = () => {
           <img src="../../public/img/vieja.svg" alt="Background" />
         </div>
         <div className="login-content">
-          <form onSubmit={handleLogin} action="index.html">
+          <form onSubmit={handleRegister} action="index.html">
             <img
               src="../../public/img/usuario.svg"
               alt="Logo"
@@ -162,4 +162,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default RegisterForm;

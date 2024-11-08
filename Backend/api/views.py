@@ -5,6 +5,9 @@ from .models import File,User
 from .serializers import FileSerializer , LoginSerializer, UserSerializer,RegisterSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import login, logout
+from django.contrib import auth 
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 class FileViewSet(viewsets.ModelViewSet):
     serializer_class = FileSerializer
@@ -48,9 +51,22 @@ class AuthViewSet(viewsets.ModelViewSet):
     def login_view(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.validated_data
-            login(request, user)  
-            return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+            user = serializer.validated_data['user']  # Asegúrate de obtener el usuario correctamente
+            auth.login(request, user)
+
+            # Generar el token
+            token = RefreshToken.for_user(user).access_token
+
+            # Devolver la respuesta en el formato esperado
+            return Response({
+                'token': str(token),
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'rol': user.rol
+                }
+            }, status=status.HTTP_200_OK)
         else:
             print("Errores de validación:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-# Application definition
+# settings.py
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -44,14 +44,17 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Mueve CorsMiddleware al principio
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
+
+# Importante: permite credenciales (necesario para sesiones y cookies)
+CORS_ALLOW_CREDENTIALS = True
 
 
 ROOT_URLCONF = 'data_visualization.urls'
@@ -74,8 +77,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'data_visualization.wsgi.application'
-AUTH_USER_MODEL='api.User'
+AUTH_USER_MODEL = 'api.User'
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
+REST_FRAMEWORK = {
+       'DEFAULT_AUTHENTICATION_CLASSES': (
+           'rest_framework_simplejwt.authentication.JWTAuthentication',
+       ),
+   }
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 

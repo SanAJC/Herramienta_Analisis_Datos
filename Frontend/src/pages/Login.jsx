@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login } from "../redux/slices/authSlice";
 import api from "../services/api";
@@ -9,36 +9,54 @@ const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
+
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/auth/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          password       
-        })
+      const response = await api.post("/auth/login/", {
+        username,
+        password,
       });
 
-      if (!response.ok) {
-        throw new Error("Error en el registro. Verifica tus datos.");
+      // Verificamos que la respuesta tenga la estructura esperada
+      const { data } = response;
+      if (!data.token || !data.user) {
+        throw new Error("Respuesta del servidor incompleta");
       }
 
-      const data = await response.json();
-      dispatch(login(data));
-      // Aquí podrías redirigir al usuario a otra página si el registro es exitoso
+      // Dispatch del login con los datos verificados
+      dispatch(
+        login({
+          token: data.token,
+          user: data.user,
+        })
+      );
 
+      // Navegamos al home
+      navigate("/home");
     } catch (error) {
-      console.error("Error en el registro:", error);
-      setError("Error al ingresar. Intenta nuevamente.");
+      console.error("Error en el login:", error);
+
+      // Manejamos diferentes tipos de errores
+      if (error.response) {
+        // Error del servidor con respuesta
+        setError(error.response.data?.message || "Credenciales inválidas");
+      } else if (error.request) {
+        // Error de red
+        setError("Error de conexión. Por favor, verifica tu internet.");
+      } else {
+        // Otros errores
+        setError("Error al iniciar sesión. Por favor, intenta nuevamente.");
+      }
+    } finally {
+      setIsLoading(false);
     }
-    console.log(JSON.stringify({ username, password }));
   };
 
   useEffect(() => {
@@ -112,8 +130,11 @@ const LoginForm = () => {
                 />
               </div>
             </div>
-            {error && <p className="text-red-500 mb-4">{error}</p>}
-            <input type="submit" className="btn" value="Ingresar" />
+            {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+
+            <button type="submit" className="btn" disabled={isLoading}>
+              {isLoading ? "Ingresando..." : "Ingresar"}
+            </button>
             <Link
               to="/register"
               className="text-gray-500 hover:text-indigo-600 text-sm"
