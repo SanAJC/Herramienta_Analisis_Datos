@@ -74,8 +74,10 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'data_visualization.wsgi.application'
-AUTH_USER_MODEL='api.User'
-
+AUTH_USER_MODEL = 'api.User'
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 

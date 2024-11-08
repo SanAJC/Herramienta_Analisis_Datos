@@ -9,11 +9,10 @@ class MyAccountManager(BaseUserManager):
      
         user=self.model(
             email=self.normalize_email(email),
-            password=password,
             username=username,
             rol=rol,  
         )
-        
+        user.is_active=True
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -36,7 +35,7 @@ class MyAccountManager(BaseUserManager):
         
         
 class User(AbstractBaseUser):
-    username=models.CharField(max_length=50)
+    username=models.CharField(max_length=50,unique=True)
     email=models.CharField(max_length=100,unique=True)
     password=models.CharField(max_length=100)
     rol=models.CharField(max_length=50)
@@ -47,11 +46,11 @@ class User(AbstractBaseUser):
     last_login=models.DateTimeField(auto_now_add=True)
     is_admin=models.BooleanField(default=False)
     is_staff=models.BooleanField(default=False)
-    is_active=models.BooleanField(default=False)
+    is_active=models.BooleanField(default=True)
     is_superadmin=models.BooleanField(default=False)
     
-    USERNAME_FIELD='email'
-    REQUIRED_FIELDS=['username','rol']
+    USERNAME_FIELD='username'
+    REQUIRED_FIELDS=['email','rol']
     
     
     objects=MyAccountManager()

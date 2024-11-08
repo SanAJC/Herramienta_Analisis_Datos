@@ -5,6 +5,7 @@ from .models import File,User
 from .serializers import FileSerializer , LoginSerializer, UserSerializer,RegisterSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import login, logout
+from django.contrib import auth 
 
 class FileViewSet(viewsets.ModelViewSet):
     serializer_class = FileSerializer
@@ -49,7 +50,7 @@ class AuthViewSet(viewsets.ModelViewSet):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data
-            login(request, user)  
+            auth.login(request, user)  
             return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
         else:
             print("Errores de validación:", serializer.errors)
