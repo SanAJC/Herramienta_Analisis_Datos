@@ -42,8 +42,11 @@ class FileViewSet(ModelViewSet):
                 archivo = pd.read_csv(file)
             elif file_type == 'xls':
                 archivo = pd.read_excel(file)
-            datos = archivo.to_dict(orient='records')
-            print(datos)  
+            datos = {}
+            for columna in archivo.columns:
+                datos[columna] = archivo[columna].tolist()
+            
+            print(datos)
             return Response({"file_data": datos}, status=status.HTTP_201_CREATED)
         
         except Exception as e:
@@ -53,35 +56,28 @@ class AuthViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-     # Permitir acceso sin autenticación a login y register
     def get_permissions(self):
         if self.action in ['login_view', 'register']:
             self.permission_classes = [AllowAny]
         else:
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
-    
+
     @action(detail=False, methods=['post'], url_path='register')
     def register(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
-        else:
-            print("Errores de validación:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], url_path='login')
     def login_view(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.validated_data  # Asegúrate de obtener el usuario correctamente
+            user = serializer.validated_data
             auth.login(request, user)
-
-            # Generar el token
             token = RefreshToken.for_user(user).access_token
-
-            # Devolver la respuesta en el formato esperado
             return Response({
                 'token': str(token),
                 'user': {
@@ -91,11 +87,27 @@ class AuthViewSet(viewsets.ModelViewSet):
                     'rol': user.rol
                 }
             }, status=status.HTTP_200_OK)
-        else:
-            print("Errores de validación:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], url_path='logout')
     def logout_view(self, request):
         auth.logout(request) 
         return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'], url_path='profile', permission_classes=[IsAuthenticated])
+    def profile(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['put','patch'], url_path='update-profile', permission_classes=[IsAuthenticated])
+    def update_profile(self, request):
+        user = request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    

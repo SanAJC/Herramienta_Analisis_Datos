@@ -7,6 +7,16 @@ const initialState = {
   isAuthenticated: !!localStorage.getItem("token"),
 };
 
+export const updateUser = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    updateUser: (state, action) => {
+      state.user = { ...state.user, ...action.payload };
+    },
+  },
+});
+
 const authSlice = createSlice({
   name: "auth",
   initialState,

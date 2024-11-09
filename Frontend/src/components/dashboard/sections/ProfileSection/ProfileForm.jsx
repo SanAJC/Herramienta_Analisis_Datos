@@ -1,9 +1,10 @@
-
 // src/components/dashboard/sections/ProfileSection/ProfileForm.jsx
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+
+
 
 export default function ProfileForm({
   userProfile,
@@ -44,17 +45,7 @@ export default function ProfileForm({
           disabled={!isEditing}
         />
       </div>
-      <div>
-        <Label htmlFor="bio">Biografía</Label>
-        <Textarea
-          id="bio"
-          name="bio"
-          value={userProfile.bio}
-          onChange={handleProfileChange}
-          disabled={!isEditing}
-          rows={4}
-        />
-      </div>
+      
       {isEditing && (
         <Button onClick={saveProfile} className="w-full">
           Guardar Cambios

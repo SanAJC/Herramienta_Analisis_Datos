@@ -474,7 +474,7 @@
 // }
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Download, FileDown, Loader2 } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -502,7 +502,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import ChartCards from "./ChartCards"; // Importamos el componente de gráficos
+import ChartCards from "./ChartCards";
+import UploadSection from "../UploadSection";
+import { uploadFile } from "@/services/api";
 
 const FilterExportCard = ({
   selectedColumns,
