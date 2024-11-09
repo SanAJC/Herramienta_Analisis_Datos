@@ -60,6 +60,75 @@
 //   );
 // }
 
+// import { Upload, Link, File, X } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card";
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// import { useState } from "react";
+
+// export default function UploadSection({ showNotification }) {
+//   const [dragActive, setDragActive] = useState(false);
+//   const [selectedFile, setSelectedFile] = useState(null);
+//   const [loading, setLoading] = useState(false);
+//   const [url, setUrl] = useState("");
+
+//   const handleDrag = (e) => {
+//     e.preventDefault();
+//     e.stopPropagation();
+//     if (e.type === "dragenter" || e.type === "dragover") {
+//       setDragActive(true);
+//     } else if (e.type === "dragleave") {
+//       setDragActive(false);
+//     }
+//   };
+
+//   const handleDrop = (e) => {
+//     e.preventDefault();
+//     e.stopPropagation();
+//     setDragActive(false);
+
+//     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+//       handleFile(e.dataTransfer.files[0]);
+//     }
+//   };
+
+//   const handleFile = (file) => {
+//     setSelectedFile(file);
+//     showNotification("Archivo seleccionado: " + file.name);
+//   };
+
+//   const handleFileInput = (e) => {
+//     if (e.target.files && e.target.files[0]) {
+//       handleFile(e.target.files[0]);
+//     }
+//   };
+
+//   const handleUpload = async () => {
+//     setLoading(true);
+//     // Simular carga
+//     await new Promise((resolve) => setTimeout(resolve, 1500));
+//     showNotification("Archivo cargado con éxito");
+//     setLoading(false);
+//     setSelectedFile(null);
+//   };
+
+//   const handleUrlSubmit = async () => {
+//     if (!url) return;
+//     setLoading(true);
+//     // Simular carga
+//     await new Promise((resolve) => setTimeout(resolve, 1500));
+//     showNotification("Datos importados desde URL");
+//     setLoading(false);
+//     setUrl("");
+//   };
+
 import { Upload, Link, File, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,6 +141,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { uploadFile, uploadFileFromUrl } from "../../../services/api";
 
 export default function UploadSection({ showNotification }) {
   const [dragActive, setDragActive] = useState(false);
@@ -100,6 +170,24 @@ export default function UploadSection({ showNotification }) {
   };
 
   const handleFile = (file) => {
+    // Validar tipo de archivo
+    const validTypes = ["csv", "xls", "xlsx"];
+    const fileType = file.name.split(".").pop().toLowerCase();
+
+    if (!validTypes.includes(fileType)) {
+      showNotification(
+        "Error: Tipo de archivo no válido. Use CSV, XLS o XLSX",
+        "error"
+      );
+      return;
+    }
+
+    // Validar tamaño (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      showNotification("Error: El archivo excede el límite de 10MB", "error");
+      return;
+    }
+
     setSelectedFile(file);
     showNotification("Archivo seleccionado: " + file.name);
   };
@@ -111,22 +199,37 @@ export default function UploadSection({ showNotification }) {
   };
 
   const handleUpload = async () => {
+    if (!selectedFile) return;
+
     setLoading(true);
-    // Simular carga
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    showNotification("Archivo cargado con éxito");
-    setLoading(false);
-    setSelectedFile(null);
+    try {
+      console.log("Enviando archivo al backend:", selectedFile);
+      const response = await uploadFile(selectedFile);
+      showNotification("Archivo cargado con éxito");
+      setSelectedFile(null);
+    } catch (error) {
+      showNotification("Error al cargar el archivo: " + error.message, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUrlSubmit = async () => {
     if (!url) return;
+
     setLoading(true);
-    // Simular carga
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    showNotification("Datos importados desde URL");
-    setLoading(false);
-    setUrl("");
+    try {
+      const response = await uploadFileFromUrl(url);
+      showNotification("Datos importados desde URL con éxito");
+      setUrl("");
+    } catch (error) {
+      showNotification(
+        "Error al importar desde URL: " + error.message,
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

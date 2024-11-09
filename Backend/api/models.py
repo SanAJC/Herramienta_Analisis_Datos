@@ -75,22 +75,4 @@ class File(models.Model):
     def __str__(self):
         return f'{self.user.email} - {self.file.name}'
 
-    def extraer_data(self):
-        archivo = self.file.path
 
-        try:
-            if self.file_type == 'csv':
-                df = pd.read_csv(archivo)
-            elif self.file_type in ['xls', 'xlsx']:
-                df = pd.read_excel(archivo)
-
-            data_array = df.to_numpy()
-            processed_data = {
-                "columns": df.columns.tolist(),
-                "summary": df.describe().to_dict(),
-                "data_array": data_array.tolist()
-            }
-            return processed_data
-
-        except Exception as e:
-            return {"error": f"No se pudo procesar el archivo: {str(e)}"}
