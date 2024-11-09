@@ -9,7 +9,8 @@ from django.contrib import auth
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.viewsets import ModelViewSet
-
+import pandas as pd
+import os
 
 class FileViewSet(ModelViewSet):
     queryset = File.objects.all()
@@ -22,12 +23,31 @@ class FileViewSet(ModelViewSet):
         file = request.FILES.get('file')
         if not file:
             return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
+        extension = os.path.splitext(file.name)[1].lower()
+        if extension == '.csv':
+            file_type = 'csv'
+        elif extension in ['.xls', '.xlsx']:
+            file_type = 'xls'  
+        else:
+            return Response({"error": "Unsupported file format"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            file_instance = File.objects.create(
+                file=file, 
+                user=request.user, 
+                file_type=file_type
+            )
+            serializer = FileSerializer(file_instance)
+            if file_type == 'csv':
+                archivo = pd.read_csv(file)
+            elif file_type == 'xls':
+                archivo = pd.read_excel(file)
+            datos = archivo.to_dict(orient='records')
+            print(datos)  
+            return Response({"file_data": datos}, status=status.HTTP_201_CREATED)
         
-        # Guardar el archivo (añade tu lógica aquí según tus necesidades)
-        file_instance = File.objects.create(file=file, user=request.user)
-        serializer = FileSerializer(file_instance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class AuthViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
