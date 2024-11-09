@@ -72,6 +72,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { uploadFile } from "../../../services/api";
 
 export default function UploadSection({ showNotification }) {
   const [dragActive, setDragActive] = useState(false);
@@ -100,6 +101,24 @@ export default function UploadSection({ showNotification }) {
   };
 
   const handleFile = (file) => {
+    // Validar tipo de archivo
+    const validTypes = ["csv", "xls", "xlsx"];
+    const fileType = file.name.split(".").pop().toLowerCase();
+
+    if (!validTypes.includes(fileType)) {
+      showNotification(
+        "Error: Tipo de archivo no válido. Use CSV, XLS o XLSX",
+        "error"
+      );
+      return;
+    }
+
+    // Validar tamaño (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      showNotification("Error: El archivo excede el límite de 10MB", "error");
+      return;
+    }
+
     setSelectedFile(file);
     showNotification("Archivo seleccionado: " + file.name);
   };
@@ -111,12 +130,18 @@ export default function UploadSection({ showNotification }) {
   };
 
   const handleUpload = async () => {
+    if (!selectedFile) return;
+    
     setLoading(true);
-    // Simular carga
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    showNotification("Archivo cargado con éxito");
-    setLoading(false);
-    setSelectedFile(null);
+    try {
+      const response = await uploadFile(selectedFile);
+      showNotification("Archivo cargado con éxito: " + response.file);
+    } catch (error) {
+      showNotification("Error al cargar el archivo. Por favor, inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
+      setSelectedFile(null);
+    }
   };
 
   const handleUrlSubmit = async () => {

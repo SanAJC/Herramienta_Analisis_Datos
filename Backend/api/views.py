@@ -1,42 +1,46 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action ,permission_classes
 from .models import File,User
 from .serializers import FileSerializer , LoginSerializer, UserSerializer,RegisterSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import login, logout
 from django.contrib import auth
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.viewsets import ModelViewSet
 
 
-class FileViewSet(viewsets.ModelViewSet):
+class FileViewSet(ModelViewSet):
+    queryset = File.objects.all()
     serializer_class = FileSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
-    def get_queryset(self):
-        usuario = self.request.user
-        if usuario.is_superuser:
-            return File.objects.all()
-        return File.objects.filter(user=usuario)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def perform_update(self, serializer):
-        serializer.save()
-
-    @action(detail=True, methods=['get'], name='Extract File Data')
-    def extract_file_data(self, request, pk=None):
-        try:
-            archivo = self.get_object()
-            proceso = archivo.extraer_data()
-            return Response(proceso, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=False, methods=['post'])
+    def upload(self, request):
+        file = request.FILES.get('file')
+        if not file:
+            return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Guardar el archivo (añade tu lógica aquí según tus necesidades)
+        file_instance = File.objects.create(file=file, user=request.user)
+        serializer = FileSerializer(file_instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
 
 class AuthViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+     # Permitir acceso sin autenticación a login y register
+    def get_permissions(self):
+        if self.action in ['login_view', 'register']:
+            self.permission_classes = [AllowAny]
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
+    
     @action(detail=False, methods=['post'], url_path='register')
     def register(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -73,5 +77,5 @@ class AuthViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='logout')
     def logout_view(self, request):
-        logout(request) 
+        auth.logout(request) 
         return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
