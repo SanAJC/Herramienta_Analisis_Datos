@@ -68,6 +68,7 @@ class User(AbstractBaseUser):
 class File(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='excel_files')
     file = models.FileField(upload_to='excel_files/')
+    created_at = models.DateTimeField(auto_now_add=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     file_type = models.CharField(max_length=10, choices=[('csv', 'CSV'), ('xls', 'XLS'), ('xlsx', 'XLSX')])
 

@@ -23,6 +23,7 @@ class FileViewSet(ModelViewSet):
         file = request.FILES.get('file')
         if not file:
             return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
         extension = os.path.splitext(file.name)[1].lower()
         if extension == '.csv':
             file_type = 'csv'
@@ -37,20 +38,40 @@ class FileViewSet(ModelViewSet):
                 user=request.user, 
                 file_type=file_type
             )
-            serializer = FileSerializer(file_instance)
-            if file_type == 'csv':
-                archivo = pd.read_csv(file)
-            elif file_type == 'xls':
-                archivo = pd.read_excel(file)
+            return Response({"message": "File uploaded successfully", "file_id": file_instance.id}, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods = ['get'])
+    def send(self, request):
+        archivo = File.objects.filter(user=request.user).order_by('-created_at').first()
+        if not archivo:
+            return Response({"error": "No files found for this user"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = FileSerializer(archivo)
+        try: 
+            archivo_ruta = archivo.file.path
+            if archivo.file_type == 'csv':
+                archivo = pd.read_csv(archivo_ruta)
+            elif archivo.file_type == 'xls':
+                archivo = pd.read_excel(archivo_ruta)
+            else:
+                return Response({"error": "Unsupported file format"}, status=status.HTTP_400_BAD_REQUEST)
             datos = {}
             for columna in archivo.columns:
                 datos[columna] = archivo[columna].tolist()
             
             print(datos)
-            return Response({"file_data": datos}, status=status.HTTP_201_CREATED)
-        
+            return Response({
+                "file_data": datos,
+                "file_info":serializer.data
+            }, status= status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+        
+        
 
 class AuthViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
