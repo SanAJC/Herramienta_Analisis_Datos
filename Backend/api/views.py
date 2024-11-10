@@ -53,14 +53,15 @@ class FileViewSet(ModelViewSet):
         try: 
             archivo_ruta = archivo.file.path
             if archivo.file_type == 'csv':
-                archivo = pd.read_csv(archivo_ruta)
+                archivo = pd.read_csv(archivo_ruta,nrows=100).fillna('')
             elif archivo.file_type == 'xls':
-                archivo = pd.read_excel(archivo_ruta)
+                archivo = pd.read_excel(archivo_ruta,nrows=100).fillna('')
             else:
                 return Response({"error": "Unsupported file format"}, status=status.HTTP_400_BAD_REQUEST)
             datos = {}
             for columna in archivo.columns:
                 datos[columna] = archivo[columna].tolist()
+            
             
             print(datos)
             return Response({

@@ -158,14 +158,18 @@ const DataFilterDialog = ({ columns, filters, setFilters }) => {
 };
 
 const FilterExportCard = ({
-  selectedColumns,
-  toggleColumn,
+  selectedYColumns,
+  selectedXColumns,
+  toggleYColumn,
+  toggleXColumn,
   exportToPDF,
   isExporting,
   availableColumns,
   filters,
   setFilters,
 }) => {
+
+  
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -187,17 +191,32 @@ const FilterExportCard = ({
         </div>
       </CardHeader>
       <CardContent>
+        <p>Eje X</p>
         <div className="flex flex-wrap gap-2">
           {availableColumns.map((column) => (
-            <Button
-              key={column}
-              variant={selectedColumns.includes(column) ? "default" : "outline"}
-              size="sm"
-              onClick={() => toggleColumn(column)}
-              className="capitalize"
-            >
-              {column}
-            </Button>
+            <label key={column} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={selectedXColumns.includes(column)}
+                onChange={() => toggleXColumn(column)}
+              />
+              <span className="capitalize">{column}</span>
+            </label>
+          ))}
+        </div>
+      </CardContent>
+      <CardContent>
+        <p>Eje Y</p>
+        <div className="flex flex-wrap gap-2">
+          {availableColumns.map((column) => (
+            <label key={column} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={selectedYColumns.includes(column)}
+                onChange={() => toggleYColumn(column)}
+              />
+              <span className="capitalize">{column}</span>
+            </label>
           ))}
         </div>
       </CardContent>
@@ -309,7 +328,8 @@ const ExportDialog = ({ onExport, isExporting }) => {
 export default function VisualizationSection({ showNotification }) {
   const [fileData, setFileData] = useState(null);
   const [processedData, setProcessedData] = useState([]);
-  const [selectedColumns, setSelectedColumns] = useState([]);
+  const [selectedXColumns, setSelectedXColumns] = useState([]);
+  const [selectedYColumns, setSelectedYColumns] = useState([]);
   const [availableColumns, setAvailableColumns] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
@@ -326,7 +346,6 @@ export default function VisualizationSection({ showNotification }) {
         if (file_data) {
           const columns = Object.keys(file_data);
           setAvailableColumns(columns);
-          setSelectedColumns(columns);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -336,16 +355,28 @@ export default function VisualizationSection({ showNotification }) {
     fetchData();
   }, []);
 
+  const toggleXColumn = (column) => {
+    setSelectedXColumns((prev) =>
+      prev.includes(column)
+        ? prev.filter((col) => col !== column)
+        : [...prev, column]
+    );
+  };
+
+  const toggleYColumn = (column) => {
+    setSelectedYColumns((prev) =>
+      prev.includes(column)
+        ? prev.filter((col) => col !== column)
+        : [...prev, column]
+    );
+  };
+
+  // Procesar datos
   useEffect(() => {
     if (!fileData) return;
-
-    //Procesar datos con filtros y columnas seleccionadas
     const processData = () => {
-      //Obtener la longitud de la matriz de datos de cualquier columna
       const dataLength = fileData[Object.keys(fileData)[0]]?.length || 0;
       let processedRows = [];
-
-      //Creación de una matriz de objetos de fila
       for (let i = 0; i < dataLength; i++) {
         let row = {};
         for (const column of availableColumns) {
@@ -354,7 +385,6 @@ export default function VisualizationSection({ showNotification }) {
         processedRows.push(row);
       }
 
-      // Apply filters
       let filteredData = processedRows.filter((row) => {
         return Object.entries(filters).every(([column, filterValue]) => {
           if (!filterValue) return true;
@@ -367,90 +397,106 @@ export default function VisualizationSection({ showNotification }) {
     };
 
     processData();
-  }, [fileData, filters, selectedColumns]);
+  }, [fileData, filters, selectedXColumns, selectedYColumns]);
 
-  const toggleColumn = (column) => {
-    setSelectedColumns((prev) =>
-      prev.includes(column)
-        ? prev.filter((col) => col !== column)
-        : [...prev, column]
-    );
-  };
+ const exportToPDF = async (config) => {
+  if (isExporting) return;
 
-  const exportToPDF = async (config) => {
-    if (isExporting) return;
+  try {
+    setIsExporting(true);
+    showNotification("Iniciando exportación...");
+    setExportProgress(10);
 
-    try {
-      setIsExporting(true);
-      showNotification("Iniciando exportación...");
-      setExportProgress(10);
+    // Capturar los gráficos
+    const chartsContainer = document.getElementById("charts-container");
 
-      // Capturar los gráficos
-      const chartsContainer = document.getElementById("charts-container");
+    setExportProgress(30);
+    const canvas = await html2canvas(chartsContainer, {
+      scale: config.quality === "high" ? 2 : config.quality === "medium" ? 1.5 : 1,
+      logging: false,
+      useCORS: true,
+    });
 
-      setExportProgress(30);
-      const canvas = await html2canvas(chartsContainer, {
-        scale:
-          config.quality === "high" ? 2 : config.quality === "medium" ? 1.5 : 1,
-        logging: false,
-        useCORS: true,
+    setExportProgress(60);
+
+    // Crear el PDF
+    const pdf = new jsPDF({
+      format: config.format.toLowerCase(),
+      orientation: config.orientation,
+    });
+
+    // Añadir título y metadata
+    const title = "Reporte de Visualización de Datos";
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
+    pdf.text(title, 20, 20);
+
+    // Añadir fecha y hora
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
+    pdf.text(`Generado el: ${new Date().toLocaleString()}`, 20, 30);
+
+    // Añadir columnas seleccionadas
+    pdf.setFontSize(12);
+    pdf.text("Columnas seleccionadas:", 20, 40);
+    pdf.setFontSize(10);
+    let currentY = 50;
+
+    if (selectedXColumns.length > 0) {
+      pdf.text("Eje X:", 30, currentY);
+      currentY += 7;
+      selectedXColumns.forEach((column) => {
+        pdf.text(`• ${column}`, 40, currentY);
+        currentY += 7;
       });
-
-      setExportProgress(60);
-
-      // Crear el PDF
-      const pdf = new jsPDF({
-        format: config.format.toLowerCase(),
-        orientation: config.orientation,
-      });
-
-      // Añadir título y metadata
-      const title = "Reporte de Visualización de Datos";
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(16);
-      pdf.text(title, 20, 20);
-
-      // Añadir fecha y hora
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(10);
-      pdf.text(`Generado el: ${new Date().toLocaleString()}`, 20, 30);
-
-      // Añadir filtros aplicados
-      pdf.setFontSize(12);
-      pdf.text("Filtros aplicados:", 20, 40);
-      pdf.setFontSize(10);
-      selectedColumns.forEach((column, index) => {
-        pdf.text(`• ${column}`, 30, 50 + index * 7);
-      });
-
-      setExportProgress(80);
-
-      // Añadir la imagen de los gráficos
-      const imgData = canvas.toDataURL("image/png");
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-      pdf.addImage(imgData, "PNG", 20, 80, pdfWidth, pdfHeight);
-
-      setExportProgress(90);
-
-      // Guardar el PDF
-      pdf.save(
-        `visualizacion_datos_${new Date().toISOString().split("T")[0]}.pdf`
-      );
-
-      setExportProgress(100);
-      showNotification("PDF exportado con éxito", "success");
-    } catch (error) {
-      console.error("Error al exportar:", error);
-      showNotification("Error al exportar el PDF", "error");
-    } finally {
-      setIsExporting(false);
-      setExportProgress(0);
     }
-  };
 
+    if (selectedYColumns.length > 0) {
+      pdf.text("Eje Y:", 30, currentY);
+      currentY += 7;
+      selectedYColumns.forEach((column) => {
+        pdf.text(`• ${column}`, 40, currentY);
+        currentY += 7;
+      });
+    }
+
+    // Añadir filtros aplicados
+    if (Object.keys(filters).length > 0) {
+      pdf.text("Filtros aplicados:", 20, currentY);
+      currentY += 7;
+      Object.entries(filters).forEach(([column, value]) => {
+        if (value) {
+          pdf.text(`• ${column}: ${value}`, 30, currentY);
+          currentY += 7;
+        }
+      });
+    }
+
+    setExportProgress(80);
+
+    // Añadir la imagen de los gráficos
+    const imgData = canvas.toDataURL("image/png");
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, "PNG", 20, currentY + 10, pdfWidth, pdfHeight);
+
+    setExportProgress(90);
+
+    // Guardar el PDF
+    pdf.save(`visualizacion_datos_${new Date().toISOString().split("T")[0]}.pdf`);
+
+    setExportProgress(100);
+    showNotification("PDF exportado con éxito", "success");
+  } catch (error) {
+    console.error("Error al exportar:", error);
+    showNotification("Error al exportar el PDF", "error");
+  } finally {
+    setIsExporting(false);
+    setExportProgress(0);
+  }
+};
   // return (
   //   <>
   //     <FilterExportCard
@@ -481,8 +527,10 @@ export default function VisualizationSection({ showNotification }) {
   return (
     <>
       <FilterExportCard
-        selectedColumns={selectedColumns}
-        toggleColumn={toggleColumn}
+        selectedXColumns={selectedXColumns}
+        toggleXColumn={toggleXColumn}
+        selectedYColumns={selectedYColumns}
+        toggleYColumn={toggleYColumn}
         exportToPDF={exportToPDF}
         isExporting={isExporting}
         availableColumns={availableColumns}
@@ -502,7 +550,8 @@ export default function VisualizationSection({ showNotification }) {
           </CardContent>
         </Card>
       )}
-      <ChartCards data={processedData} selectedColumns={selectedColumns} />
+      <ChartCards data={processedData} selectedColumns={{ x: selectedXColumns, y: selectedYColumns }} />
     </>
   );
+  
 }
