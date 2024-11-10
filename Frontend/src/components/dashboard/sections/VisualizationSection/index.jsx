@@ -1,74 +1,3 @@
-// import { useState, useEffect } from "react";
-// import { Download, FileDown, Loader2 } from "lucide-react";
-// import html2canvas from "html2canvas";
-// import jsPDF from "jspdf";
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogDescription,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogTrigger,
-// } from "@/components/ui/dialog";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
-// import { Progress } from "@/components/ui/progress";
-// import ChartCards from "./ChartCards"; // Importamos el componente de gráficos
-// import api from "@/services/api";
-
-// const FilterExportCard = ({
-//   selectedColumns,
-//   toggleColumn,
-//   exportToPDF,
-//   isExporting,
-// }) => {
-//   return (
-//     <Card className="mb-6">
-//       <CardHeader>
-//         <div className="flex justify-between items-center">
-//           <div>
-//             <CardTitle>Visualización de Datos</CardTitle>
-//             <CardDescription>
-//               Personaliza y exporta tus visualizaciones
-//             </CardDescription>
-//           </div>
-//           <div className="space-x-2">
-//             <ExportDialog onExport={exportToPDF} isExporting={isExporting} />
-//           </div>
-//         </div>
-//       </CardHeader>
-//       <CardContent>
-//         <div className="flex flex-wrap gap-2">
-//           {["valor", "tendencia", "porcentaje"].map((column) => (
-//             <Button
-//               key={column}
-//               variant={selectedColumns.includes(column) ? "default" : "outline"}
-//               size="sm"
-//               onClick={() => toggleColumn(column)}
-//               className="capitalize"
-//             >
-//               {column}
-//             </Button>
-//           ))}
-//         </div>
-//       </CardContent>
-//     </Card>
-//   );
-// };
-
 import { useState, useEffect } from "react";
 import { Download, FileDown, Loader2, Filter } from "lucide-react";
 import html2canvas from "html2canvas";
@@ -104,6 +33,9 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+
 import ChartCards from "./ChartCards";
 import api from "@/services/api";
 
@@ -168,56 +100,89 @@ const FilterExportCard = ({
   filters,
   setFilters,
 }) => {
-
-  
   return (
-    <Card className="mb-6">
-      <CardHeader>
+    <Card className="mb-6 bg-white shadow-md">
+      <CardHeader className="border-b">
         <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>Visualización de Datos</CardTitle>
-            <CardDescription>
-              Personaliza y exporta tus visualizaciones
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              Visualización de Datos
+            </CardTitle>
+            <CardDescription className="text-gray-500">
+              Personaliza y exporta tus visualizaciones de manera sencilla
             </CardDescription>
           </div>
-          <div className="space-x-2">
+          <div className="flex items-center space-x-3">
             <DataFilterDialog
               columns={availableColumns}
               filters={filters}
               setFilters={setFilters}
+              className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-4 py-2 rounded-lg transition-colors"
             />
-            <ExportDialog onExport={exportToPDF} isExporting={isExporting} />
+            <ExportDialog
+              onExport={exportToPDF}
+              isExporting={isExporting}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+            />
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <p>Eje X</p>
-        <div className="flex flex-wrap gap-2">
-          {availableColumns.map((column) => (
-            <label key={column} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={selectedXColumns.includes(column)}
-                onChange={() => toggleXColumn(column)}
-              />
-              <span className="capitalize">{column}</span>
-            </label>
-          ))}
-        </div>
-      </CardContent>
-      <CardContent>
-        <p>Eje Y</p>
-        <div className="flex flex-wrap gap-2">
-          {availableColumns.map((column) => (
-            <label key={column} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={selectedYColumns.includes(column)}
-                onChange={() => toggleYColumn(column)}
-              />
-              <span className="capitalize">{column}</span>
-            </label>
-          ))}
+
+      <CardContent className="pt-6">
+        <div className="space-y-6">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Eje X</h3>
+              <Badge variant="secondary" className="text-sm">
+                {selectedXColumns.length} seleccionados
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {availableColumns.map((column) => (
+                <label
+                  key={column}
+                  className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-black	 transition-colors cursor-pointer group"
+                >
+                  <span className="capitalize text-gray-700 group-hover:text-black">
+                    {column}
+                  </span>
+                  <Switch
+                    checked={selectedXColumns.includes(column)}
+                    onCheckedChange={() => toggleXColumn(column)}
+                    className="data-[state=checked]:bg-black	"
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <Separator className="my-6" />
+
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Eje Y</h3>
+              <Badge variant="secondary" className="text-sm">
+                {selectedYColumns.length} seleccionados
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {availableColumns.map((column) => (
+                <label
+                  key={column}
+                  className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-500 transition-colors cursor-pointer group"
+                >
+                  <span className="capitalize text-gray-700 group-hover:text-blue-600">
+                    {column}
+                  </span>
+                  <Switch
+                    checked={selectedYColumns.includes(column)}
+                    onCheckedChange={() => toggleYColumn(column)}
+                    className="data-[state=checked]:bg-blue-600"
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -399,104 +364,107 @@ export default function VisualizationSection({ showNotification }) {
     processData();
   }, [fileData, filters, selectedXColumns, selectedYColumns]);
 
- const exportToPDF = async (config) => {
-  if (isExporting) return;
+  const exportToPDF = async (config) => {
+    if (isExporting) return;
 
-  try {
-    setIsExporting(true);
-    showNotification("Iniciando exportación...");
-    setExportProgress(10);
+    try {
+      setIsExporting(true);
+      showNotification("Iniciando exportación...");
+      setExportProgress(10);
 
-    // Capturar los gráficos
-    const chartsContainer = document.getElementById("charts-container");
+      // Capturar los gráficos
+      const chartsContainer = document.getElementById("charts-container");
 
-    setExportProgress(30);
-    const canvas = await html2canvas(chartsContainer, {
-      scale: config.quality === "high" ? 2 : config.quality === "medium" ? 1.5 : 1,
-      logging: false,
-      useCORS: true,
-    });
-
-    setExportProgress(60);
-
-    // Crear el PDF
-    const pdf = new jsPDF({
-      format: config.format.toLowerCase(),
-      orientation: config.orientation,
-    });
-
-    // Añadir título y metadata
-    const title = "Reporte de Visualización de Datos";
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(16);
-    pdf.text(title, 20, 20);
-
-    // Añadir fecha y hora
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
-    pdf.text(`Generado el: ${new Date().toLocaleString()}`, 20, 30);
-
-    // Añadir columnas seleccionadas
-    pdf.setFontSize(12);
-    pdf.text("Columnas seleccionadas:", 20, 40);
-    pdf.setFontSize(10);
-    let currentY = 50;
-
-    if (selectedXColumns.length > 0) {
-      pdf.text("Eje X:", 30, currentY);
-      currentY += 7;
-      selectedXColumns.forEach((column) => {
-        pdf.text(`• ${column}`, 40, currentY);
-        currentY += 7;
+      setExportProgress(30);
+      const canvas = await html2canvas(chartsContainer, {
+        scale:
+          config.quality === "high" ? 2 : config.quality === "medium" ? 1.5 : 1,
+        logging: false,
+        useCORS: true,
       });
-    }
 
-    if (selectedYColumns.length > 0) {
-      pdf.text("Eje Y:", 30, currentY);
-      currentY += 7;
-      selectedYColumns.forEach((column) => {
-        pdf.text(`• ${column}`, 40, currentY);
-        currentY += 7;
+      setExportProgress(60);
+
+      // Crear el PDF
+      const pdf = new jsPDF({
+        format: config.format.toLowerCase(),
+        orientation: config.orientation,
       });
-    }
 
-    // Añadir filtros aplicados
-    if (Object.keys(filters).length > 0) {
-      pdf.text("Filtros aplicados:", 20, currentY);
-      currentY += 7;
-      Object.entries(filters).forEach(([column, value]) => {
-        if (value) {
-          pdf.text(`• ${column}: ${value}`, 30, currentY);
+      // Añadir título y metadata
+      const title = "Reporte de Visualización de Datos";
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(16);
+      pdf.text(title, 20, 20);
+
+      // Añadir fecha y hora
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.text(`Generado el: ${new Date().toLocaleString()}`, 20, 30);
+
+      // Añadir columnas seleccionadas
+      pdf.setFontSize(12);
+      pdf.text("Columnas seleccionadas:", 20, 40);
+      pdf.setFontSize(10);
+      let currentY = 50;
+
+      if (selectedXColumns.length > 0) {
+        pdf.text("Eje X:", 30, currentY);
+        currentY += 7;
+        selectedXColumns.forEach((column) => {
+          pdf.text(`• ${column}`, 40, currentY);
           currentY += 7;
-        }
-      });
+        });
+      }
+
+      if (selectedYColumns.length > 0) {
+        pdf.text("Eje Y:", 30, currentY);
+        currentY += 7;
+        selectedYColumns.forEach((column) => {
+          pdf.text(`• ${column}`, 40, currentY);
+          currentY += 7;
+        });
+      }
+
+      // Añadir filtros aplicados
+      if (Object.keys(filters).length > 0) {
+        pdf.text("Filtros aplicados:", 20, currentY);
+        currentY += 7;
+        Object.entries(filters).forEach(([column, value]) => {
+          if (value) {
+            pdf.text(`• ${column}: ${value}`, 30, currentY);
+            currentY += 7;
+          }
+        });
+      }
+
+      setExportProgress(80);
+
+      // Añadir la imagen de los gráficos
+      const imgData = canvas.toDataURL("image/png");
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      pdf.addImage(imgData, "PNG", 20, currentY + 10, pdfWidth, pdfHeight);
+
+      setExportProgress(90);
+
+      // Guardar el PDF
+      pdf.save(
+        `visualizacion_datos_${new Date().toISOString().split("T")[0]}.pdf`
+      );
+
+      setExportProgress(100);
+      showNotification("PDF exportado con éxito", "success");
+    } catch (error) {
+      console.error("Error al exportar:", error);
+      showNotification("Error al exportar el PDF", "error");
+    } finally {
+      setIsExporting(false);
+      setExportProgress(0);
     }
-
-    setExportProgress(80);
-
-    // Añadir la imagen de los gráficos
-    const imgData = canvas.toDataURL("image/png");
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-    pdf.addImage(imgData, "PNG", 20, currentY + 10, pdfWidth, pdfHeight);
-
-    setExportProgress(90);
-
-    // Guardar el PDF
-    pdf.save(`visualizacion_datos_${new Date().toISOString().split("T")[0]}.pdf`);
-
-    setExportProgress(100);
-    showNotification("PDF exportado con éxito", "success");
-  } catch (error) {
-    console.error("Error al exportar:", error);
-    showNotification("Error al exportar el PDF", "error");
-  } finally {
-    setIsExporting(false);
-    setExportProgress(0);
-  }
-};
+  };
   // return (
   //   <>
   //     <FilterExportCard
@@ -550,8 +518,10 @@ export default function VisualizationSection({ showNotification }) {
           </CardContent>
         </Card>
       )}
-      <ChartCards data={processedData} selectedColumns={{ x: selectedXColumns, y: selectedYColumns }} />
+      <ChartCards
+        data={processedData}
+        selectedColumns={{ x: selectedXColumns, y: selectedYColumns }}
+      />
     </>
   );
-  
 }
