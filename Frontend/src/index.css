@@ -1,6 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #d5deef; /* Color actualizado para mejor combinación */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #000; /* Color actualizado para mejor combinación */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #000;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: bg-blue-100 #d5deef;
+}
+
  
 @layer base {
   :root {
