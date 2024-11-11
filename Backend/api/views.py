@@ -70,6 +70,13 @@ class FileViewSet(ModelViewSet):
             }, status= status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+    @action(detail=False,methods=['get'],permission_classes=[IsAuthenticated])
+    def record(self,request):
+        info_data=File.objects.filter(user=request.user).order_by('-uploaded_at')
+        print(info_data)
+        serializer=FileSerializer(info_data, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
             
         
         

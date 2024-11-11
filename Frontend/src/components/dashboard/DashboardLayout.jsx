@@ -3,11 +3,11 @@ import { useState } from "react";
 import Sidebar from "./Sidebar";
 import HomeSection from "./sections/HomeSection";
 import UploadSection from "./sections/UploadSection";
-import AnalysisSection from "./sections/AnalysisSection";
 import VisualizationSection from "./sections/VisualizationSection";
 import ProfileSection from "./sections/ProfileSection";
 import Notification from "./common/Notification";
 import HistorySection from "./sections/HistorySection";
+import TableSection from "./sections/TableSection";
 
 export function DashboardLayout() {
   const [activeSection, setActiveSection] = useState("home");
@@ -31,8 +31,8 @@ export function DashboardLayout() {
         {activeSection === "upload" && (
           <UploadSection showNotification={showNotification} />
         )}
-        {activeSection === "analysis" && (
-          <AnalysisSection showNotification={showNotification} />
+        {activeSection === "table" && (
+          <TableSection showNotification={showNotification} />
         )}
         {activeSection === "visualization" && (
           <VisualizationSection showNotification={showNotification} />

@@ -465,32 +465,6 @@ export default function VisualizationSection({ showNotification }) {
       setExportProgress(0);
     }
   };
-  // return (
-  //   <>
-  //     <FilterExportCard
-  //       selectedColumns={selectedColumns}
-  //       toggleColumn={toggleColumn}
-  //       exportToPDF={exportToPDF}
-  //       isExporting={isExporting}
-  //     />
-  //     {isExporting && (
-  //       <Card className="mb-4">
-  //         <CardContent className="py-4">
-  //           <div className="space-y-2">
-  //             <div className="flex justify-between text-sm">
-  //               <span>Exportando PDF...</span>
-  //               <span>{exportProgress}%</span>
-  //             </div>
-  //             <Progress value={exportProgress} className="h-2" />
-  //           </div>
-  //         </CardContent>
-  //       </Card>
-  //     )}
-  //     {fileData && (
-  //       <ChartCards data={fileData} selectedColumns={selectedColumns} />
-  //     )}
-  //   </>
-  // );
 
   return (
     <>

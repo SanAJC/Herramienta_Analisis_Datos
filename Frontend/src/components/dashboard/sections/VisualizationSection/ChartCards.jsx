@@ -1,4 +1,4 @@
-// // // src/components/dashboard/sections/VisualizationSection/ChartCards.jsx
+// src/components/dashboard/sections/VisualizationSection/ChartCards.jsx
 import {
   BarChart,
   Bar,
@@ -38,7 +38,7 @@ export default function ChartCards({ data, selectedColumns }) {
   return (
     <div
       id="charts-container"
-      className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      className="grid grid-cols-1 md:grid-cols-1 gap-6"
     >
       {/* Gráfico de Barras */}
       <Card className="print:break-inside-avoid">

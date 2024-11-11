@@ -1,42 +1,3 @@
-// // api.jsx
-// import axios from "axios";
-
-// const api = axios.create({
-//   baseURL: "http://localhost:8000/api",
-//   headers: {
-//     // "Content-Type": "application/json",
-//     "Content-Type": "multipart/form-data",
-//   },
-// });
-
-// // Interceptor para agregar el token a todas las peticiones
-// api.interceptors.request.use(
-//   (config) => {
-//     const token = localStorage.getItem("token");
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-//   },
-//   (error) => {
-//     return Promise.reject(error);
-//   }
-// );
-
-// export const uploadFile = async (file) => {
-//   const formData = new FormData();
-//   formData.append("file", file);
-
-//   try {
-//     const response = await api.post("/file/upload/", formData,);
-//     return response.data;
-//   } catch (error) {
-//     console.error("Error uploading file:", error);
-//     throw error;
-//   }
-// };
-// export default api;
-
 import axios from "axios";
 
 const api = axios.create({
@@ -123,6 +84,53 @@ export const uploadFile = async (file) => {
     return response.data;
   } catch (error) {
     console.error("Upload Error:", error);
+    throw error;
+  }
+};
+
+// Funciones para el historial de archivos
+export const obtenerHistorial = async () => {
+  try {
+    const response = await api.get("/file/record/");
+    console.log("Historial obtenido:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener historial:", error);
+    throw error;
+  }
+};
+
+export const obtenerDetalleArchivo = async (id) => {
+  try {
+    const response = await api.get(`/file/${id}/`);
+    console.log("Detalle de archivo obtenido:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener detalle del archivo:", error);
+    throw error;
+  }
+};
+
+// Función para procesar datos del archivo
+export const procesarArchivo = async (id) => {
+  try {
+    const response = await api.post(`/file/${id}/process/`);
+    console.log("Archivo procesado:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al procesar archivo:", error);
+    throw error;
+  }
+};
+
+// Función para eliminar archivo
+export const eliminarArchivo = async (id) => {
+  try {
+    const response = await api.delete(`/file/${id}/`);
+    console.log("Archivo eliminado:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al eliminar archivo:", error);
     throw error;
   }
 };
